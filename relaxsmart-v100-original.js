@@ -90,3 +90,59 @@
     }, 350);
   }
 })();
+
+<div class="stats-grid">
+          <!--?lit$662756805$--><!---->
+            <div class="stat-card with-border" style="--card-bg: #FFFFFF;">
+              <!--?lit$662756805$-->
+                <div class="icon-wrapper">
+                  <i class="sicon-users"></i>
+                </div>
+              
+              <div class="stat-value-container">
+                <span class="stat-value"><!--?lit$662756805$-->2000</span>
+                <!--?lit$662756805$--><span class="stat-suffix"><!--?lit$662756805$-->K+</span>
+              </div>
+              <div class="stat-label"><!--?lit$662756805$-->عدد المنتجات المباعة</div>
+            </div>
+          <!----><!---->
+            <div class="stat-card with-border" style="--card-bg: #FFFFFF;">
+              <!--?lit$662756805$-->
+                <div class="icon-wrapper">
+                  <i class="sicon-package"></i>
+                </div>
+              
+              <div class="stat-value-container">
+                <span class="stat-value"><!--?lit$662756805$-->100</span>
+                <!--?lit$662756805$--><span class="stat-suffix"><!--?lit$662756805$-->%</span>
+              </div>
+              <div class="stat-label"><!--?lit$662756805$-->من العملاء راضون عن الخدمة</div>
+            </div>
+          <!----><!---->
+            <div class="stat-card with-border" style="--card-bg: #FFFFFF;">
+              <!--?lit$662756805$-->
+                <div class="icon-wrapper">
+                  <i class="sicon-star"></i>
+                </div>
+              
+              <div class="stat-value-container">
+                <span class="stat-value"><!--?lit$662756805$-->25000</span>
+                <!--?lit$662756805$-->
+              </div>
+              <div class="stat-label"><!--?lit$662756805$-->زائر يوميًا</div>
+            </div>
+          <!----><!---->
+            <div class="stat-card with-border" style="--card-bg: #FFFFFF;">
+              <!--?lit$662756805$-->
+                <div class="icon-wrapper">
+                  <i class="sicon-award"></i>
+                </div>
+              
+              <div class="stat-value-container">
+                <span class="stat-value"><!--?lit$662756805$-->8000</span>
+                <!--?lit$662756805$--><span class="stat-suffix"><!--?lit$662756805$-->+</span>
+              </div>
+              <div class="stat-label"><!--?lit$662756805$-->طلب مكتمل</div>
+            </div>
+          <!---->
+        </div>
