@@ -1,148 +1,116 @@
-/* RELAX SMART V116 — Two-column stats on mobile ONLY
-   Paste once AFTER your existing single JS loader in Salla.
-   Reads the existing stats configuration: no numbers are invented.
-   Preserves native Salla component on desktop.
+/* RELAX SMART | STATS NATIVE 2-COLUMN MOBILE ONLY
+   SECTION 932031919 — keeps the original Salla cards and numbers.
+   IMPORTANT: delete the old RS116 / RS117 JavaScript from Salla first.
+   There are NO custom cards, timers running indefinitely, or checkout changes.
 */
 (function () {
   "use strict";
-  if (window.__RS116_STATS__) return;
-  window.__RS116_STATS__ = true;
+  if (window.__RS_NATIVE_STATS_GRID_V120__) return;
+  window.__RS_NATIVE_STATS_GRID_V120__ = true;
 
-  function render() {
-    var section = document.querySelector('section[component-id="932031919"]');
+  var sectionSelector = 'section[component-id="932031919"]';
+  var styleId = 'rs-native-stats-mobile-grid-v120';
+
+  /* Only layout: don't override typography, colors or the theme's cards. */
+  var shadowCSS =
+    '@media (max-width:767px){' +
+    ':host .stats-grid{' +
+      'display:grid!important;' +
+      'grid-template-columns:repeat(2,minmax(0,1fr))!important;' +
+      'gap:10px!important;' +
+    '}' +
+    ':host .stats-grid>.stat-card{' +
+      'min-width:0!important;' +
+      'max-width:100%!important;' +
+      'width:100%!important;' +
+      'box-sizing:border-box!important;' +
+    '}' +
+    '}';
+
+  var lightCSS =
+    '@media (max-width:767px){' +
+    sectionSelector + ' .stats-grid{' +
+      'display:grid!important;' +
+      'grid-template-columns:repeat(2,minmax(0,1fr))!important;' +
+      'gap:10px!important;' +
+    '}' +
+    sectionSelector + ' .stats-grid>.stat-card{' +
+      'min-width:0!important;' +
+      'max-width:100%!important;' +
+      'width:100%!important;' +
+      'box-sizing:border-box!important;' +
+    '}' +
+    '}';
+
+  function apply() {
+    var section = document.querySelector(sectionSelector);
     if (!section) return false;
-    if (section.querySelector('.rs116-stats-mobile')) return true;
 
-    var component = section.querySelector('[component-name="stats-section"]');
-    if (!component) return false;
+    /* Clean up leftover V116/V117 cards, if any were previously injected. */
+    section.querySelectorAll('.rs116-stats-mobile, .rs117-stats-panel')
+      .forEach(function (el) { el.remove(); });
+    section.classList.remove('rs116-stats-ready', 'rs117-ready');
+    var oldStyle = document.getElementById('rs117-stats-css');
+    if (oldStyle) oldStyle.remove();
 
-    var config;
-    try {
-      config = JSON.parse(component.getAttribute('config') || '{}');
-    } catch (e) {
-      console.warn('Relax Smart stats: invalid configuration');
-      return true; // Do not hide the original section.
-    }
-    if (!Array.isArray(config.stats) || !config.stats.length) return false;
+    var host = section.querySelector('[component-name="stats-section"]');
+    if (!host) return false;
 
-    var panel = document.createElement('div');
-    panel.className = 'rs116-stats-mobile';
-    panel.setAttribute('dir', 'rtl');
-
-    var headingText = config.title || (config.ar && config.ar.title) || '';
-    var subtitleText = config.subtitle || (config.ar && config.ar.subtitle) || '';
-
-    if (headingText) {
-      var heading = document.createElement('h2');
-      heading.className = 'rs116-stats-heading';
-      heading.textContent = headingText;
-      panel.appendChild(heading);
-    }
-    if (subtitleText) {
-      var subtitle = document.createElement('p');
-      subtitle.className = 'rs116-stats-subtitle';
-      subtitle.textContent = subtitleText;
-      panel.appendChild(subtitle);
-    }
-
-    var grid = document.createElement('div');
-    grid.className = 'rs116-stats-grid';
-
-    config.stats.forEach(function (stat) {
-      if (!stat || stat.__hidden) return;
-      var card = document.createElement('div');
-      card.className = 'rs116-stat-card';
-
-      if (typeof stat.icon === 'string' && /^sicon-[a-z0-9-]+$/i.test(stat.icon)) {
-        var icon = document.createElement('i');
-        icon.className = 'rs116-stat-icon ' + stat.icon;
-        icon.setAttribute('aria-hidden', 'true');
-        card.appendChild(icon);
+    /* Salla's custom element may render its grid inside Shadow DOM. */
+    if (host.shadowRoot) {
+      if (!host.shadowRoot.getElementById(styleId)) {
+        var style = document.createElement('style');
+        style.id = styleId;
+        style.textContent = shadowCSS;
+        host.shadowRoot.appendChild(style);
       }
+      return true;
+    }
 
-      var number = document.createElement('strong');
-      number.className = 'rs116-stat-number';
-      number.textContent = String(stat.value == null ? '' : stat.value) +
-        String(stat.suffix == null ? '' : stat.suffix);
-      card.appendChild(number);
+    /* Fallback for a light-DOM version of the component. */
+    if (host.querySelector('.stats-grid')) {
+      if (!document.getElementById(styleId)) {
+        var lightStyle = document.createElement('style');
+        lightStyle.id = styleId;
+        lightStyle.textContent = lightCSS;
+        document.head.appendChild(lightStyle);
+      }
+      return true;
+    }
 
-      var label = document.createElement('span');
-      label.className = 'rs116-stat-label';
-      label.textContent = String(stat.label || (stat.ar && stat.ar.label) || '');
-      card.appendChild(label);
-
-      grid.appendChild(card);
-    });
-
-    if (!grid.children.length) return false;
-    panel.appendChild(grid);
-    component.insertAdjacentElement('afterend', panel);
-    section.classList.add('rs116-stats-ready');
-    return true;
+    return false;
   }
 
-  // A short bounded retry, no MutationObserver and no continuous polling.
-  if (!render()) {
-    var attempts = 0;
+  function boot() {
+    if (apply()) return;
+
+    /* Bounded retry for late component upgrade; never runs forever. */
+    var tries = 0;
     var retry = setInterval(function () {
-      attempts += 1;
-      if (render() || attempts >= 20) clearInterval(retry);
-    }, 350);
+      tries++;
+      if (apply() || tries >= 40) clearInterval(retry);
+    }, 250);
+
+    /* If Salla lazy-loads this far-down section later, retry on visibility. */
+    var section = document.querySelector(sectionSelector);
+    if (section && 'IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (entries) {
+        if (!entries.some(function (entry) { return entry.isIntersecting; })) return;
+        io.disconnect();
+        if (apply()) return;
+        var n = 0;
+        var late = setInterval(function () {
+          n++;
+          if (apply() || n >= 30) clearInterval(late);
+        }, 250);
+      }, { rootMargin: '700px' });
+      io.observe(section);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot, { once: true });
+  } else {
+    boot();
   }
 })();
-
-<div class="stats-grid">
-          <!--?lit$662756805$--><!---->
-            <div class="stat-card with-border" style="--card-bg: #FFFFFF;">
-              <!--?lit$662756805$-->
-                <div class="icon-wrapper">
-                  <i class="sicon-users"></i>
-                </div>
-              
-              <div class="stat-value-container">
-                <span class="stat-value"><!--?lit$662756805$-->2000</span>
-                <!--?lit$662756805$--><span class="stat-suffix"><!--?lit$662756805$-->K+</span>
-              </div>
-              <div class="stat-label"><!--?lit$662756805$-->عدد المنتجات المباعة</div>
-            </div>
-          <!----><!---->
-            <div class="stat-card with-border" style="--card-bg: #FFFFFF;">
-              <!--?lit$662756805$-->
-                <div class="icon-wrapper">
-                  <i class="sicon-package"></i>
-                </div>
-              
-              <div class="stat-value-container">
-                <span class="stat-value"><!--?lit$662756805$-->100</span>
-                <!--?lit$662756805$--><span class="stat-suffix"><!--?lit$662756805$-->%</span>
-              </div>
-              <div class="stat-label"><!--?lit$662756805$-->من العملاء راضون عن الخدمة</div>
-            </div>
-          <!----><!---->
-            <div class="stat-card with-border" style="--card-bg: #FFFFFF;">
-              <!--?lit$662756805$-->
-                <div class="icon-wrapper">
-                  <i class="sicon-star"></i>
-                </div>
-              
-              <div class="stat-value-container">
-                <span class="stat-value"><!--?lit$662756805$-->25000</span>
-                <!--?lit$662756805$-->
-              </div>
-              <div class="stat-label"><!--?lit$662756805$-->زائر يوميًا</div>
-            </div>
-          <!----><!---->
-            <div class="stat-card with-border" style="--card-bg: #FFFFFF;">
-              <!--?lit$662756805$-->
-                <div class="icon-wrapper">
-                  <i class="sicon-award"></i>
-                </div>
-              
-              <div class="stat-value-container">
-                <span class="stat-value"><!--?lit$662756805$-->8000</span>
-                <!--?lit$662756805$--><span class="stat-suffix"><!--?lit$662756805$-->+</span>
-              </div>
-              <div class="stat-label"><!--?lit$662756805$-->طلب مكتمل</div>
-            </div>
-          <!---->
-        </div>
